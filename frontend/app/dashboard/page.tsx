@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Pencil, Trash2, Plus, FileIcon, Download } from "lucide-react"
+import { Pencil, Trash2, Plus, FileIcon, Download, Scan } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import FamilyMembers  from "../components/FamilyMemberForm"
+import { FamilyMemberForm } from "../components/FamilyMemberForm"
 import { SchemeDiscoveryChat } from "../components/SchemeDiscoveryChat"
 import { DocumentUpload } from "../components/DocumentUpload"
 import { GuidelinesPage } from "../components/GuidelinesPage"
@@ -106,6 +106,7 @@ const translations = {
     noFamilyMembers: "वसुधैव परिवार",
     uploadDocument: "दस्तावेज़ अपलोड करें",
     selectFile: "फ़ाइल का चयन करें",
+    applyNow: "अभी आवेदन करें",
     close: "बंद करें",
     blankPageTitle: "दस्तावेज़ विवरण",
     backToDashboard: "डैशबोर्ड पर वापस जाएँ",
@@ -150,6 +151,7 @@ const translations = {
     noFamilyMembers: "வசுதைவ குடும்பம்",
     uploadDocument: "ஆவணத்தை பதிவேற்றவும்",
     selectFile: "கோப்பைத் தேர்ந்தெடுக்கவும்",
+    applyNow: "இப்போது விண்ணப்பிக்கவும்",
     close: "மூடு",
     blankPageTitle: "ஆவண விவரங்கள்",
     backToDashboard: "கட்டுப்பாட்டுப் பலகைக்குத் திரும்பு",
@@ -176,6 +178,11 @@ export default function EnThiranDashboard() {
     if (savedLanguage) {
       setLanguage(savedLanguage)
     }
+    loadFamilyMembers()
+    loadDocuments()
+  }, [])
+
+  const loadFamilyMembers = () => {
     const savedFamilyMembers = localStorage.getItem("familyMembers")
     if (savedFamilyMembers) {
       try {
@@ -186,8 +193,7 @@ export default function EnThiranDashboard() {
         localStorage.removeItem("familyMembers")
       }
     }
-    loadDocuments()
-  }, [])
+  }
 
   const loadDocuments = async () => {
     try {
@@ -353,15 +359,12 @@ export default function EnThiranDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">{t.familyMembersList}</h3>
-                <FamilyMembers onSave={handleSaveFamilyMember} translations={t}>
-                  <Button variant="outline">
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t.addFamilyMember}
-                  </Button>
-                </FamilyMembers>
-              </div>
+              <FamilyMemberForm onSave={handleSaveFamilyMember} translations={t}>
+                <Button variant="outline">
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t.addFamilyMember}
+                </Button>
+              </FamilyMemberForm>
               {familyMembers.length === 0 ? (
                 <p className="text-muted-foreground">{t.noFamilyMembers}</p>
               ) : (
@@ -379,11 +382,11 @@ export default function EnThiranDashboard() {
                           </p>
                         </div>
                         <div className="flex space-x-2">
-                          <FamilyMembers member={member} onSave={handleSaveFamilyMember} translations={t}>
+                          <FamilyMemberForm member={member} onSave={handleSaveFamilyMember} translations={t}>
                             <Button variant="outline" size="sm">
                               <Pencil className="h-4 w-4" />
                             </Button>
-                          </FamilyMembers>
+                          </FamilyMemberForm>
                           <Button variant="destructive" size="sm" onClick={() => handleDeleteFamilyMember(member.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -416,7 +419,7 @@ export default function EnThiranDashboard() {
                   "Government Co-Contribution: Eligible accounts receive government contributions for the first 5 years.",
                   "Nominee Provision: Spouse continues to receive a pension after the subscriber's death, and nominee receives the corpus thereafter.",
                 ]}
-                onApply={handleApplyNow}
+                onApply={() => handleApplyNow("atal")}
                 translations={t}
               >
                 <div className="flex items-center justify-between rounded-lg border p-3">
@@ -424,6 +427,9 @@ export default function EnThiranDashboard() {
                     <h3 className="font-semibold">{t.atalPensionScheme}</h3>
                     <p className="text-sm text-muted-foreground">{t.atalPensionDescription}</p>
                   </div>
+                  <Button size="sm" onClick={() => handleApplyNow("atal")}>
+                    {t.applyNow}
+                  </Button>
                   <Button size="sm" onClick={() => handleApplyNow("atal")}>
                     {t.applyNow}
                   </Button>
@@ -440,13 +446,7 @@ export default function EnThiranDashboard() {
                   "You must pass the driving test",
                   "You must provide proof of address and identity",
                 ]}
-                onApply={() => {
-                  console.log("Applying for Driving License Renewal")
-                  toast({
-                    title: "Application submitted",
-                    description: "Your Driving License Renewal application has been submitted successfully.",
-                  })
-                }}
+                onApply={() => handleApplyNow("driving")}
                 translations={t}
               >
                 <div className="flex items-center justify-between rounded-lg border p-3">
@@ -454,7 +454,9 @@ export default function EnThiranDashboard() {
                     <h3 className="font-semibold">{t.drivingLicenseRenewal}</h3>
                     <p className="text-sm text-muted-foreground">{t.drivingLicenseDescription}</p>
                   </div>
-                  <Button size="sm">{t.renew}</Button>
+                  <Button size="sm" onClick={() => handleApplyNow("driving")}>
+                    {t.renew}
+                  </Button>
                 </div>
               </GuidelinesPage>
             </div>
@@ -494,6 +496,10 @@ export default function EnThiranDashboard() {
                             <Download className="w-4 h-4 mr-2" />
                             {t.download}
                           </Button>
+                          <Button variant="outline" size="sm" onClick={() => handlePerformOCR(doc.id, doc.name)}>
+                            <Scan className="w-4 h-4 mr-2" />
+                            {t.performOCR}
+                          </Button>
                           <Button variant="destructive" size="sm" onClick={() => handleDeleteDocument(doc.id)}>
                             <Trash2 className="w-4 h-4 mr-2" />
                             {t.delete}
@@ -511,7 +517,7 @@ export default function EnThiranDashboard() {
         <DocumentDetailsPopup
           isOpen={!!selectedDocument}
           onClose={() => setSelectedDocument(null)}
-          title={documents.find((d) => d.id === selectedDocument)?.name || ""}
+          documentId={selectedDocument}
           translations={t}
         />
       </main>
