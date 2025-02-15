@@ -400,6 +400,7 @@ export default function EnThiranDashboard() {
               <GuidelinesPage
                 title={t.atalPensionScheme}
                 description={t.atalPensionDescription}
+                schemeName="Atal Pension Scheme"
                 guidelines={[
                   "Eligibility: Open to Indian citizens aged 18-40 years with a savings or post office account.",
                   "Pension Benefits: Provides a fixed monthly pension of ₹1,000 to ₹5,000 starting from age 60.",
@@ -421,6 +422,7 @@ export default function EnThiranDashboard() {
               <GuidelinesPage
                 title={t.drivingLicenseRenewal}
                 description={t.drivingLicenseDescription}
+                schemeName="Driver License Renewal"
                 guidelines={[
                   "You must have a valid learner's license",
                   "You must be at least 18 years old",
