@@ -1,8 +1,7 @@
 import json
-import together  # Using Together AI for LLM
+import requests  # For making HTTP requests to DeepSeek API
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Scheme
 
 @csrf_exempt
 def process_query(request):
@@ -14,7 +13,7 @@ def process_query(request):
             if not user_query:
                 return JsonResponse({"error": "Query cannot be empty"}, status=400)
 
-            # Generate AI response
+            # Generate AI response using DeepSeek
             prompt = f"""
             You are an expert on government schemes. Answer in this format:
 
@@ -26,13 +25,27 @@ def process_query(request):
 
             User query: {user_query}
             """
-            response = together.Complete.create(
-                model="mistralai/Mistral-7B-Instruct-v0.1",
-                prompt=prompt,
-                max_tokens=300
-            )
 
-            response_text = response["output"].strip()
+            # Make a request to DeepSeek API
+            deepseek_url = "https://api.deepseek.com/chat/completions"  # Example endpoint
+            headers = {
+                "Authorization": env.API_KEY,
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": "deepseek-model-name",  # Replace with the specific DeepSeek model
+                "messages": [
+                    {"role": "system", "content": "You are an expert on government schemes."},
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": 300
+            }
+
+            response = requests.post(deepseek_url, headers=headers, json=payload)
+            response_data = response.json()
+
+            # Extract the response text
+            response_text = response_data["choices"][0]["message"]["content"].strip()
             return JsonResponse({"response": response_text})
 
         except Exception as e:
