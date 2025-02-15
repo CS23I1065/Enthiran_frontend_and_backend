@@ -59,7 +59,7 @@ const translations = {
     edit: "Edit",
     delete: "Delete",
     familyMembersList: "Family Members List",
-    noFamilyMembers: "No family members added yet. Add your first family member above.",
+    noFamilyMembers: "Vasudhaiva Kutumbakam",
     uploadDocument: "Upload Document",
     selectFile: "Select File",
     close: "Close",
@@ -70,6 +70,7 @@ const translations = {
     download: "Download",
     loading: "Loading...",
     errorLoading: "Error loading content.",
+    viewGuidelines: "View Guidelines", 
   },
   hindi: {
     title: "एन-थिरन नागरिक सेवाएं",
@@ -102,7 +103,7 @@ const translations = {
     edit: "संपादित करें",
     delete: "हटाएं",
     familyMembersList: "परिवार के सदस्यों की सूची",
-    noFamilyMembers: "अभी तक कोई परिवार का सदस्य नहीं जोड़ा गया है। ऊपर अपना पहला परिवार का सदस्य जोड़ें।",
+    noFamilyMembers: "वसुधैव परिवार",
     uploadDocument: "दस्तावेज़ अपलोड करें",
     selectFile: "फ़ाइल का चयन करें",
     close: "बंद करें",
@@ -112,7 +113,8 @@ const translations = {
     viewDetails: "विस्तृत जानकारी देखें",
     download: "डाउनलोड करें",
     loading: "लोड हो रहा है...", 
-    errorLoading: "सामग्री लोड करने में त्रुटि।", 
+    errorLoading: "सामग्री लोड करने में त्रुटि।",
+    viewGuidelines: "दिशानिर्देश देखें" 
   },
   tamil: {
     title: "என்-திரன் குடிமக்கள் சேவைகள்",
@@ -145,7 +147,7 @@ const translations = {
     edit: "திருத்து",
     delete: "நீக்கு",
     familyMembersList: "குடும்ப உறுப்பினர்கள் பட்டியல்",
-    noFamilyMembers: "இதுவரை குடும்ப உறுப்பினர்கள் யாரும் சேர்க்கப்படவில்லை. மேலே உங்கள் முதல் குடும்ப உறுப்பினரைச் சேர்க்கவும்.",
+    noFamilyMembers: "வசுதைவ குடும்பம்",
     uploadDocument: "ஆவணத்தை பதிவேற்றவும்",
     selectFile: "கோப்பைத் தேர்ந்தெடுக்கவும்",
     close: "மூடு",
@@ -156,6 +158,7 @@ const translations = {
     download: "பதிவிறக்கம்",
     loading: "ஏற்றுகிறது...",
     errorLoading: "உள்ளடக்கத்தை ஏற்றுவதில் பிழை.",
+    viewGuidelines: "மார்க்கத்தைக் காண்க"
   },
 }
 
@@ -303,13 +306,17 @@ export default function EnThiranDashboard() {
     [toast],
   )
 
-  const handleApplyNow = useCallback(() => {
-    console.log("Applying for Atal Pension Scheme")
-    toast({
-      title: "Application submitted",
-      description: "Your Atal Pension Scheme application has been submitted successfully.",
-    })
-  }, [toast])
+  const handleApplyNow = useCallback((scheme: string) => {
+    let url = ""
+    if (scheme === "atal") {
+      url = "https://www.india.gov.in/registration-form-atal-pension-yojana-apy"
+    } else if (scheme === "driving") {
+      url = "https://services.india.gov.in/service/detail/online-renewal-of-driving-license"
+    }
+    if (url) {
+      window.open(url, "_blank")
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -400,6 +407,8 @@ export default function EnThiranDashboard() {
               <GuidelinesPage
                 title={t.atalPensionScheme}
                 description={t.atalPensionDescription}
+                schemeName="Atal Pension Scheme"
+                applyUrl="https://www.india.gov.in/registration-form-atal-pension-yojana-apy"
                 guidelines={[
                   "Eligibility: Open to Indian citizens aged 18-40 years with a savings or post office account.",
                   "Pension Benefits: Provides a fixed monthly pension of ₹1,000 to ₹5,000 starting from age 60.",
@@ -415,12 +424,16 @@ export default function EnThiranDashboard() {
                     <h3 className="font-semibold">{t.atalPensionScheme}</h3>
                     <p className="text-sm text-muted-foreground">{t.atalPensionDescription}</p>
                   </div>
-                  <Button size="sm">{t.applyNow}</Button>
+                  <Button size="sm" onClick={() => handleApplyNow("atal")}>
+                    {t.applyNow}
+                  </Button>
                 </div>
               </GuidelinesPage>
               <GuidelinesPage
                 title={t.drivingLicenseRenewal}
                 description={t.drivingLicenseDescription}
+                schemeName="Driving License Renewal"
+                applyUrl="https://services.india.gov.in/service/detail/online-renewal-of-driving-license"
                 guidelines={[
                   "You must have a valid learner's license",
                   "You must be at least 18 years old",

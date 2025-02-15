@@ -1,9 +1,8 @@
 from django.contrib import admin
-from django.urls import path
-from schemes.views import process_query
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/process_query/', process_query),
+    path('api/schemes/', include('schemes.urls')),
 ]
 

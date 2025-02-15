@@ -1,55 +1,37 @@
-import json
-import requests  # For making HTTP requests to DeepSeek API
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+import json
+import logging
+from .scraper import scrape_schemes  # Assuming you'll move the scraping logic to a separate file
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
-def process_query(request):
-    if request.method == "POST":
+def search_schemes(request):
+    if request.method == 'POST':
         try:
+            # Parse the JSON data from the request body
             data = json.loads(request.body)
-            user_query = data.get("query", "").strip()
+            user_query = data.get('query', '')
 
             if not user_query:
-                return JsonResponse({"error": "Query cannot be empty"}, status=400)
+                return JsonResponse({'error': 'Query parameter is required'}, status=400)
 
-            # Generate AI response using DeepSeek
-            prompt = f"""
-            You are an expert on government schemes. Answer in this format:
+            # Call the scrape_schemes function
+            relevant_schemes = scrape_schemes(user_query)
 
-            Name: <Scheme Name>
-            Eligibility: <Eligibility Details>
-            Documents Required: <Documents List>
-            Offline Support: <Yes/No>
-            Website: <URL>
-
-            User query: {user_query}
-            """
-
-            # Make a request to DeepSeek API
-            deepseek_url = "https://api.deepseek.com/chat/completions"  # Example endpoint
-            headers = {
-                "Authorization": env.API_KEY,
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "model": "deepseek-model-name",  # Replace with the specific DeepSeek model
-                "messages": [
-                    {"role": "system", "content": "You are an expert on government schemes."},
-                    {"role": "user", "content": prompt}
-                ],
-                "max_tokens": 300
+            # Prepare the response
+            response_data = {
+                'status': 'success',
+                'query': user_query,
+                'results': relevant_schemes
             }
 
-            response = requests.post(deepseek_url, headers=headers, json=payload)
-            response_data = response.json()
-
-            # Extract the response text
-            response_text = response_data["choices"][0]["message"]["content"].strip()
-            return JsonResponse({"response": response_text})
+            return JsonResponse(response_data)
 
         except Exception as e:
-            return JsonResponse({"error": f"API Error: {str(e)}"}, status=500)
+            logger.error(f"An error occurred: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
 
-    return JsonResponse({"error": "Invalid request method"}, status=400)
-
+    else:
+        return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)

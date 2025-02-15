@@ -14,6 +14,7 @@ interface DocumentDetailsPopupProps {
     close: string
     loading: string
     errorLoading: string
+    [key: string]: string
   }
 }
 
