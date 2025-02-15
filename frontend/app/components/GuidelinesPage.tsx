@@ -1,15 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
   DialogDescription,
 } from "@/components/ui/dialog";
 
@@ -19,13 +15,10 @@ interface GuidelinesPageProps {
   guidelines: string[];
   applyUrl?: string;
   schemeName: string;
-  applyUrl?: string;
-  schemeName: string;
   translations: {
-    viewGuidelines: string;
-    viewGuidelines: string;
-    applyNow: string;
-    close: string;
+  viewGuidelines: string;
+  applyNow: string;
+  close: string;
   };
   onApply: (scheme: string) => void;
   children: React.ReactNode;
@@ -131,5 +124,4 @@ export function GuidelinesPage({
         </DialogContent>
       </Dialog>
     </div>
-  );
 }

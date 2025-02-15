@@ -5,7 +5,7 @@ import { Pencil, Trash2, Plus, FileIcon, Download, Scan } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FamilyMemberForm } from "../components/FamilyMemberForm"
+import  FamilyMembers  from "../components/FamilyMemberForm"
 import { SchemeDiscoveryChat } from "../components/SchemeDiscoveryChat"
 import { DocumentUpload } from "../components/DocumentUpload"
 import { GuidelinesPage } from "../components/GuidelinesPage"
@@ -106,7 +106,6 @@ const translations = {
     noFamilyMembers: "वसुधैव परिवार",
     uploadDocument: "दस्तावेज़ अपलोड करें",
     selectFile: "फ़ाइल का चयन करें",
-    applyNow: "अभी आवेदन करें",
     close: "बंद करें",
     blankPageTitle: "दस्तावेज़ विवरण",
     backToDashboard: "डैशबोर्ड पर वापस जाएँ",
@@ -151,7 +150,6 @@ const translations = {
     noFamilyMembers: "வசுதைவ குடும்பம்",
     uploadDocument: "ஆவணத்தை பதிவேற்றவும்",
     selectFile: "கோப்பைத் தேர்ந்தெடுக்கவும்",
-    applyNow: "இப்போது விண்ணப்பிக்கவும்",
     close: "மூடு",
     blankPageTitle: "ஆவண விவரங்கள்",
     backToDashboard: "கட்டுப்பாட்டுப் பலகைக்குத் திரும்பு",
@@ -359,12 +357,12 @@ export default function EnThiranDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <FamilyMemberForm onSave={handleSaveFamilyMember} translations={t}>
+              <FamilyMembers onSave={handleSaveFamilyMember} translations={t}>
                 <Button variant="outline">
                   <Plus className="mr-2 h-4 w-4" />
                   {t.addFamilyMember}
                 </Button>
-              </FamilyMemberForm>
+              </FamilyMembers>
               {familyMembers.length === 0 ? (
                 <p className="text-muted-foreground">{t.noFamilyMembers}</p>
               ) : (
@@ -382,11 +380,11 @@ export default function EnThiranDashboard() {
                           </p>
                         </div>
                         <div className="flex space-x-2">
-                          <FamilyMemberForm member={member} onSave={handleSaveFamilyMember} translations={t}>
+                          <FamilyMembers member={member} onSave={handleSaveFamilyMember} translations={t}>
                             <Button variant="outline" size="sm">
                               <Pencil className="h-4 w-4" />
                             </Button>
-                          </FamilyMemberForm>
+                          </FamilyMembers>
                           <Button variant="destructive" size="sm" onClick={() => handleDeleteFamilyMember(member.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -518,8 +516,7 @@ export default function EnThiranDashboard() {
           isOpen={!!selectedDocument}
           onClose={() => setSelectedDocument(null)}
           documentId={selectedDocument}
-          translations={t}
-        />
+          translations={t} title={""}        />
       </main>
 
       <footer className="mt-8 text-center text-sm text-muted-foreground">{t.footer}</footer>
