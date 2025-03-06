@@ -101,4 +101,3 @@ export function AddFamilyMember({ onAdd, translations }: AddFamilyMemberProps) {
     </Dialog>
   )
 }
-

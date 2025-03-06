@@ -1,17 +1,21 @@
 "use client"
 
+import { CardDescription } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+
 import { useState, useEffect, useCallback } from "react"
 import { Pencil, Trash2, Plus, FileIcon, Download, Scan } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import  FamilyMembers  from "../components/FamilyMemberForm"
+import { FamilyMemberForm } from "../components/FamilyMemberForm"
 import { SchemeDiscoveryChat } from "../components/SchemeDiscoveryChat"
 import { DocumentUpload } from "../components/DocumentUpload"
 import { GuidelinesPage } from "../components/GuidelinesPage"
 import { useToast } from "@/components/ui/use-toast"
 import { DocumentDetailsPopup } from "../components/DocumentDetailsPopup"
 import { getAllFiles, deleteFile, getFile } from "../utils/fileStorage"
+import { OCRResultsEditor } from "../components/OCRResultsEditor"
 
 interface FamilyMember {
   id: string
@@ -25,6 +29,8 @@ interface Document {
   name: string
   lastUpdated: string
   type: string
+  familyMemberId: string
+  extractedData?: Record<string, string>
 }
 
 const translations = {
@@ -59,7 +65,7 @@ const translations = {
     edit: "Edit",
     delete: "Delete",
     familyMembersList: "Family Members List",
-    noFamilyMembers: "Vasudhaiva Kutumbakam",
+    noFamilyMembers: "No family members added yet. Add your first family member above.",
     uploadDocument: "Upload Document",
     selectFile: "Select File",
     close: "Close",
@@ -68,9 +74,12 @@ const translations = {
     noDocuments: "No documents uploaded yet.",
     viewDetails: "View Details",
     download: "Download",
-    loading: "Loading...",
-    errorLoading: "Error loading content.",
-    viewGuidelines: "View Guidelines", 
+    performOCR: "Perform OCR",
+    editOCRResults: "Edit OCR Results",
+    filterByRelation: "Filter by Relation",
+    selectRelation: "Select Relation",
+    filterByFamilyMember: "Filter by Family Member",
+    selectFamilyMember: "Select Family Member",
   },
   hindi: {
     title: "एन-थिरन नागरिक सेवाएं",
@@ -103,18 +112,22 @@ const translations = {
     edit: "संपादित करें",
     delete: "हटाएं",
     familyMembersList: "परिवार के सदस्यों की सूची",
-    noFamilyMembers: "वसुधैव परिवार",
+    noFamilyMembers: "अभी तक कोई परिवार का सदस्य नहीं जोड़ा गया है। ऊपर अपना पहला परिवार का सदस्य जोड़ें।",
     uploadDocument: "दस्तावेज़ अपलोड करें",
     selectFile: "फ़ाइल का चयन करें",
+    applyNow: "अभी आवेदन करें",
     close: "बंद करें",
     blankPageTitle: "दस्तावेज़ विवरण",
     backToDashboard: "डैशबोर्ड पर वापस जाएँ",
     noDocuments: "अभी तक कोई दस्तावेज़ अपलोड नहीं किया गया है।",
     viewDetails: "विस्तृत जानकारी देखें",
     download: "डाउनलोड करें",
-    loading: "लोड हो रहा है...", 
-    errorLoading: "सामग्री लोड करने में त्रुटि।",
-    viewGuidelines: "दिशानिर्देश देखें" 
+    performOCR: "OCR करें",
+    editOCRResults: "OCR परिणाम संपादित करें",
+    filterByRelation: "रिश्ते से छानें",
+    selectRelation: "रिश्ते का चयन करें",
+    filterByFamilyMember: "परिवार के सदस्य द्वारा फ़िल्टर करें",
+    selectFamilyMember: "परिवार के सदस्य का चयन करें",
   },
   tamil: {
     title: "என்-திரன் குடிமக்கள் சேவைகள்",
@@ -147,26 +160,35 @@ const translations = {
     edit: "திருத்து",
     delete: "நீக்கு",
     familyMembersList: "குடும்ப உறுப்பினர்கள் பட்டியல்",
-    noFamilyMembers: "வசுதைவ குடும்பம்",
+    noFamilyMembers: "இதுவரை குடும்ப உறுப்பினர்கள் யாரும் சேர்க்கப்படவில்லை. மேலே உங்கள் முதல் குடும்ப உறுப்பினரைச் சேர்க்கவும்.",
     uploadDocument: "ஆவணத்தை பதிவேற்றவும்",
     selectFile: "கோப்பைத் தேர்ந்தெடுக்கவும்",
+    applyNow: "இப்போது விண்ணப்பிக்கவும்",
     close: "மூடு",
     blankPageTitle: "ஆவண விவரங்கள்",
     backToDashboard: "கட்டுப்பாட்டுப் பலகைக்குத் திரும்பு",
     noDocuments: "இதுவரை எந்த ஆவணமும் பதிவேற்றப்படவில்லை.",
     viewDetails: "விவரங்களைப் பார்க்கவும்",
     download: "பதிவிறக்கம்",
-    loading: "ஏற்றுகிறது...",
-    errorLoading: "உள்ளடக்கத்தை ஏற்றுவதில் பிழை.",
-    viewGuidelines: "மார்க்கத்தைக் காண்க"
+    performOCR: "OCR செய்யவும்",
+    editOCRResults: "OCR முடிவுகளைத் திருத்து",
+    filterByRelation: "உறவு மூலம் வடிகட்டவும்",
+    selectRelation: "உறவைத் தேர்ந்தெடுக்கவும்",
+    filterByFamilyMember: "குடும்ப உறுப்பினர் மூலம் வடிகட்டவும்",
+    selectFamilyMember: "குடும்ப உறுப்பினரைத் தேர்ந்தெடுக்கவும்",
   },
 }
+
+const relationOptions = ["myself", "spouse", "child", "parent", "other"]
 
 export default function EnThiranDashboard() {
   const [language, setLanguage] = useState("english")
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [documents, setDocuments] = useState<Document[]>([])
   const [selectedDocument, setSelectedDocument] = useState<string | null>(null)
+  const [ocrResults, setOcrResults] = useState<Record<string, string> | null>(null)
+  const [processingOCR, setProcessingOCR] = useState<string | null>(null)
+  const [selectedFamilyMember, setSelectedFamilyMember] = useState<string>("myself")
   const { toast } = useToast()
 
   const t = translations[language as keyof typeof translations]
@@ -217,12 +239,20 @@ export default function EnThiranDashboard() {
   const handleSaveFamilyMember = useCallback(
     (member: FamilyMember) => {
       setFamilyMembers((prevMembers) => {
-        const updatedMembers = member.id
-          ? prevMembers.map((m) => (m.id === member.id ? member : m))
-          : [...prevMembers, { ...member, id: Date.now().toString() }]
+        const existingIndex = prevMembers.findIndex((m) => m.id === member.id)
+        let updatedMembers
+
+        if (existingIndex >= 0) {
+          updatedMembers = [...prevMembers]
+          updatedMembers[existingIndex] = member
+        } else {
+          updatedMembers = [...prevMembers, member]
+        }
+
         localStorage.setItem("familyMembers", JSON.stringify(updatedMembers))
         return updatedMembers
       })
+
       toast({
         title: member.id ? "Family member updated" : "Family member added",
         description: `${member.name} has been ${member.id ? "updated" : "added"} to your family account.`,
@@ -238,20 +268,23 @@ export default function EnThiranDashboard() {
         localStorage.setItem("familyMembers", JSON.stringify(updatedMembers))
         return updatedMembers
       })
+      // Also delete associated documents
+      setDocuments((prevDocuments) => prevDocuments.filter((doc) => doc.familyMemberId !== id))
       toast({
         title: "Family member removed",
-        description: "The family member has been removed from your account.",
+        description: "The family member and associated documents have been removed from your account.",
       })
     },
     [toast],
   )
 
   const handleDocumentUpload = useCallback(
-    (fileId: string, fileName: string, fileType: string) => {
+    (fileId: string, fileName: string, fileType: string, familyMemberId: string) => {
       const newDocument: Document = {
         id: fileId,
         name: fileName,
         type: fileType,
+        familyMemberId: familyMemberId,
         lastUpdated: new Date().toLocaleDateString(),
       }
       setDocuments((prevDocuments) => [...prevDocuments, newDocument])
@@ -319,8 +352,87 @@ export default function EnThiranDashboard() {
     }
     if (url) {
       window.open(url, "_blank")
-    }
-  }, [])
+    }
+  }, [])
+
+  const handlePerformOCR = useCallback(
+    async (id: string, name: string) => {
+      setProcessingOCR(id)
+      toast({
+        title: "OCR Started",
+        description: `OCR process has started for ${name}. This may take a few moments.`,
+      })
+
+      try {
+        const file = await getFile(id)
+        if (!file) {
+          throw new Error("File not found")
+        }
+
+        const formData = new FormData()
+        formData.append("file", file)
+
+        const response = await fetch("/api/ocr", {
+          method: "POST",
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to perform OCR")
+        }
+
+        const data = await response.json()
+
+        if (data.error) {
+          throw new Error(data.error)
+        }
+
+        setOcrResults({ ...data.extractedData, id })
+        toast({
+          title: "OCR Completed",
+          description: "OCR process completed successfully. Please review the extracted data.",
+        })
+      } catch (error) {
+        console.error("Error performing OCR:", error)
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to perform OCR. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setProcessingOCR(null)
+      }
+    },
+    [toast],
+  )
+
+  const handleEditOCRResults = useCallback(
+    (documentId: string) => {
+      const document = documents.find((doc) => doc.id === documentId)
+      if (document && document.extractedData) {
+        setOcrResults({ ...document.extractedData, id: documentId })
+      }
+    },
+    [documents],
+  )
+
+  const handleSaveOCRResults = useCallback(
+    (updatedData: Record<string, string>) => {
+      setDocuments((prevDocuments) =>
+        prevDocuments.map((doc) => (doc.id === updatedData.id ? { ...doc, extractedData: updatedData } : doc)),
+      )
+      setOcrResults(null)
+      toast({
+        title: "OCR results updated",
+        description: "The extracted data has been updated successfully.",
+      })
+    },
+    [toast],
+  )
+
+  // Filter documents based on selected family member
+  const filteredDocuments = documents.filter((doc) => doc.familyMemberId === selectedFamilyMember)
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -357,12 +469,12 @@ export default function EnThiranDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <FamilyMembers onSave={handleSaveFamilyMember} translations={t}>
+              <FamilyMemberForm onSave={handleSaveFamilyMember} translations={t}>
                 <Button variant="outline">
                   <Plus className="mr-2 h-4 w-4" />
                   {t.addFamilyMember}
                 </Button>
-              </FamilyMembers>
+              </FamilyMemberForm>
               {familyMembers.length === 0 ? (
                 <p className="text-muted-foreground">{t.noFamilyMembers}</p>
               ) : (
@@ -380,13 +492,14 @@ export default function EnThiranDashboard() {
                           </p>
                         </div>
                         <div className="flex space-x-2">
-                          <FamilyMembers member={member} onSave={handleSaveFamilyMember} translations={t}>
+                          <FamilyMemberForm member={member} onSave={handleSaveFamilyMember} translations={t}>
                             <Button variant="outline" size="sm">
                               <Pencil className="h-4 w-4" />
                             </Button>
-                          </FamilyMembers>
+                          </FamilyMemberForm>
                           <Button variant="destructive" size="sm" onClick={() => handleDeleteFamilyMember(member.id)}>
                             <Trash2 className="h-4 w-4" />
+                            {t.delete}
                           </Button>
                         </div>
                       </CardContent>
@@ -409,7 +522,6 @@ export default function EnThiranDashboard() {
                 title={t.atalPensionScheme}
                 description={t.atalPensionDescription}
                 schemeName="Atal Pension Scheme"
-                applyUrl="https://www.india.gov.in/registration-form-atal-pension-yojana-apy"
                 guidelines={[
                   "Eligibility: Open to Indian citizens aged 18-40 years with a savings or post office account.",
                   "Pension Benefits: Provides a fixed monthly pension of ₹1,000 to ₹5,000 starting from age 60.",
@@ -428,16 +540,12 @@ export default function EnThiranDashboard() {
                   <Button size="sm" onClick={() => handleApplyNow("atal")}>
                     {t.applyNow}
                   </Button>
-                  <Button size="sm" onClick={() => handleApplyNow("atal")}>
-                    {t.applyNow}
-                  </Button>
                 </div>
               </GuidelinesPage>
               <GuidelinesPage
                 title={t.drivingLicenseRenewal}
                 description={t.drivingLicenseDescription}
-                schemeName="Driving License Renewal"
-                applyUrl="https://services.india.gov.in/service/detail/online-renewal-of-driving-license"
+                schemeName="Driver License Renewal"
                 guidelines={[
                   "You must have a valid learner's license",
                   "You must be at least 18 years old",
@@ -468,20 +576,38 @@ export default function EnThiranDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <Label htmlFor="familyMemberFilter">{t.filterByFamilyMember}</Label>
+                <Select value={selectedFamilyMember} onValueChange={setSelectedFamilyMember}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={t.selectFamilyMember} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="myself">Myself</SelectItem>
+                    {familyMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.name} ({member.relation})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <DocumentUpload
                 onUpload={handleDocumentUpload}
+                familyMembers={familyMembers}
                 translations={{
                   uploadDocument: t.uploadDocument,
                   selectFile: t.selectFile,
+                  selectFamilyMember: t.selectFamilyMember,
                   upload: t.save,
                   cancel: t.cancel,
                 }}
               />
-              {documents.length === 0 ? (
+              {filteredDocuments.length === 0 ? (
                 <p className="text-muted-foreground text-center">{t.noDocuments}</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {documents.map((doc) => (
+                  {filteredDocuments.map((doc) => (
                     <Card key={doc.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4 flex flex-col items-center justify-center">
                         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
@@ -494,8 +620,17 @@ export default function EnThiranDashboard() {
                             <Download className="w-4 h-4 mr-2" />
                             {t.download}
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => handlePerformOCR(doc.id, doc.name)}>
-                            <Scan className="w-4 h-4 mr-2" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePerformOCR(doc.id, doc.name)}
+                            disabled={processingOCR === doc.id}
+                          >
+                            {processingOCR === doc.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
+                            ) : (
+                              <Scan className="w-4 h-4 mr-2" />
+                            )}
                             {t.performOCR}
                           </Button>
                           <Button variant="destructive" size="sm" onClick={() => handleDeleteDocument(doc.id)}>
@@ -516,8 +651,23 @@ export default function EnThiranDashboard() {
           isOpen={!!selectedDocument}
           onClose={() => setSelectedDocument(null)}
           documentId={selectedDocument}
-          translations={t} title={""}        />
+          translations={t}
+        />
       </main>
+
+      {ocrResults && (
+        <OCRResultsEditor
+          isOpen={!!ocrResults}
+          onClose={() => setOcrResults(null)}
+          initialData={ocrResults}
+          onSave={handleSaveOCRResults}
+          translations={{
+            editOCRResults: t.editOCRResults,
+            save: t.save,
+            cancel: t.cancel,
+          }}
+        />
+      )}
 
       <footer className="mt-8 text-center text-sm text-muted-foreground">{t.footer}</footer>
     </div>

@@ -8,13 +8,11 @@ import { getFile } from "../utils/fileStorage"
 interface DocumentDetailsPopupProps {
   isOpen: boolean
   onClose: () => void
-  documentId?: string | null
-  title: string;
+  documentId: string | null
   translations: {
     close: string
     loading: string
     errorLoading: string
-    [key: string]: string
   }
 }
 
